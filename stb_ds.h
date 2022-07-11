@@ -1932,18 +1932,18 @@ void stbds_unit_tests(void)
     else       STBDS_ASSERT(hmget_ts(map, stb_struct, temp) == i*5);
     //STBDS_ASSERT(hmget(map, t.key) == 0);
   }
+  hmfree(map);
 
   for (i=0; i < testsize; i += 2) {
     stbds_struct stb_struct = { i,i*2,i*3,i*4 };
     hmputs(map2, stb_struct);
   }
-  hmfree(map);
 
   for (i=0; i < testsize; i += 1) {
-    // stbds_struct s = { i,i*2,i*3,i*4 };
+    stbds_struct r = { i,i*2,i*3,i*4 };
     stbds_struct t = { i,i*2,i*3+1,i*4 };
-    if (i & 1) STBDS_ASSERT(hmgets(map2, s.key).d == 0);
-    else       STBDS_ASSERT(hmgets(map2, s.key).d == i*4);
+    if (i & 1) STBDS_ASSERT(hmgets(map2, r.key).d == 0);
+    else       STBDS_ASSERT(hmgets(map2, r.key).d == i*4);
     //STBDS_ASSERT(hmgetp(map2, t.key) == 0);
   }
   hmfree(map2);
