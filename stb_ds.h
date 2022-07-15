@@ -1959,6 +1959,7 @@ void stbds_unit_tests(void)
     else       STBDS_ASSERT(hmgets(map3, stb_struct.key).d == i*5);
     //STBDS_ASSERT(hmgetp(map3, t.key) == 0);
   }
+  hmfree(map3);
 #endif
 }
 #endif
