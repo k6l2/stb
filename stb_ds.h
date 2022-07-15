@@ -534,8 +534,8 @@ CREDITS
 #endif
 #if !defined(STBDS_REALLOC) && !defined(STBDS_FREE)
 #include <stdlib.h>
-#define STBDS_REALLOC(c,p,s) realloc(p,s)
-#define STBDS_FREE(c,p)      free(p)
+#define STBDS_REALLOC(c,p,s,file,line) realloc(p,s)
+#define STBDS_FREE(c,p)                free(p)
 #endif
 
 #ifdef _MSC_VER
@@ -570,11 +570,11 @@ extern void stbds_unit_tests(void);
 // Everything below here is implementation details
 //
 
-extern void * stbds_arrgrowf(void* memory_context, void *a, size_t elemsize, size_t addlen, size_t min_cap);
+extern void * stbds_arrgrowf(void* memory_context, void *a, size_t elemsize, size_t addlen, size_t min_cap, const wchar_t* file, int line);
 extern void   stbds_arrfreef(void* memory_context, void *a);
 extern void   stbds_hmfree_func(void* memory_context, void *p, size_t elemsize);
-extern void * stbds_hmget_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode);
-extern void * stbds_hmget_key_ts(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode);
+extern void * stbds_hmget_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode, const wchar_t *file, int line);
+extern void * stbds_hmget_key_ts(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode, const wchar_t *file, int line);
 extern void * stbds_hmput_default(void* memory_context, void *a, size_t elemsize);
 extern void * stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode);
 extern void * stbds_hmdel_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, size_t keyoffset, int mode);
@@ -647,7 +647,7 @@ extern void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode)
 #define stbds_mcarrins(mc,a,i,v)     (stbds_mcarrinsn((mc),(a),(i),1), (a)[i]=(v))
 #define stbds_mcarrmaybegrow(mc,a,n) ((!(a) || stbds_header(a)->length + (n) > stbds_header(a)->capacity) \
                                      ? (stbds_mcarrgrow((mc),a,n,0),0) : 0)
-#define stbds_mcarrgrow(mc,a,b,c)    ((a) = stbds_arrgrowf_wrapper((mc), (a), sizeof *(a), (b), (c)))
+#define stbds_mcarrgrow(mc,a,b,c)    ((a) = stbds_arrgrowf_wrapper((mc), (a), sizeof *(a), (b), (c), __FILEW__, __LINE__))
 
 #define stbds_hmput(t, k, v)        (stbds_mchmput(NULL, (t), (k), (v)))
 #define stbds_hmputs(t, s)          (stbds_mchmputs(NULL, (t), (s)))
@@ -679,10 +679,10 @@ extern void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode)
 #define stbds_mchmget_ts(mc, t, k, temp)   (stbds_mchmgetp_ts((mc), (t), (k), (temp))->value)
 #define stbds_mchmgetp_null(mc, t, k)      (stbds_mchmgeti((mc), (t), (k)) == -1 ? NULL : &(t)[stbds_temp((t)-1)])
 #define stbds_mchmgeti(mc, t, k) \
-    ( (t) = stbds_hmget_key_wrapper((mc), (t), sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, STBDS_HM_BINARY)\
+    ( (t) = stbds_hmget_key_wrapper((mc), (t), sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, STBDS_HM_BINARY, __FILEW__, __LINE__)\
     , stbds_temp((t)-1))
 #define stbds_mchmgeti_ts(mc, t, k, temp) \
-    ( (t) = stbds_hmget_key_ts_wrapper((mc), (t), sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, &(temp), STBDS_HM_BINARY)\
+    ( (t) = stbds_hmget_key_ts_wrapper((mc), (t), sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, &(temp), STBDS_HM_BINARY, __FILEW__, __LINE__)\
     , (temp))
 #define stbds_mchmdel(mc, t, k) \
     ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, STBDS_OFFSETOF((t),key), STBDS_HM_BINARY))\
@@ -732,10 +732,10 @@ extern void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode)
     ( (t) = stbds_hmput_key_wrapper((mc), (t), sizeof *(t), (void*) (p)->key, sizeof (p)->key, STBDS_HM_PTR_TO_STRING)\
     , (t)[stbds_temp((t)-1)] = (p))
 #define stbds_mcshgeti(mc, t, k) \
-     ( (t) = stbds_hmget_key_wrapper((mc), (t), sizeof *(t), (void*) (k), sizeof (t)->key, STBDS_HM_STRING)\
+     ( (t) = stbds_hmget_key_wrapper((mc), (t), sizeof *(t), (void*) (k), sizeof (t)->key, STBDS_HM_STRING, __FILEW__, __LINE__)\
      , stbds_temp((t)-1))
 #define stbds_mcpshgeti(mc, t, k) \
-     ( (t) = stbds_hmget_key_wrapper((mc), (t), sizeof *(t), (void*) (k), sizeof (*(t))->key, STBDS_HM_PTR_TO_STRING)\
+     ( (t) = stbds_hmget_key_wrapper((mc), (t), sizeof *(t), (void*) (k), sizeof (*(t))->key, STBDS_HM_PTR_TO_STRING, __FILEW__, __LINE__)\
      , stbds_temp((t)-1))
 #define stbds_mcshgetp(mc, t, k) ((void)stbds_mcshgeti((mc), (t), (k)), &(t)[stbds_temp((t)-1)])
 #define stbds_mcpshget(mc, t, k) ((void)stbds_mcpshgeti((mc), (t), (k)), (t)[stbds_temp((t)-1)])
@@ -790,14 +790,14 @@ enum
 #ifdef __cplusplus
 // in C we use implicit assignment from these void*-returning functions to T*.
 // in C++ these templates make the same code work
-template<class T> static T * stbds_arrgrowf_wrapper(void* memory_context, T *a, size_t elemsize, size_t addlen, size_t min_cap) {
-  return (T*)stbds_arrgrowf(memory_context, (void *)a, elemsize, addlen, min_cap);
+template<class T> static T * stbds_arrgrowf_wrapper(void* memory_context, T *a, size_t elemsize, size_t addlen, size_t min_cap, const wchar_t*const file, int line) {
+  return (T*)stbds_arrgrowf(memory_context, (void *)a, elemsize, addlen, min_cap, file, line);
 }
-template<class T> static T * stbds_hmget_key_wrapper(void* memory_context, T *a, size_t elemsize, void *key, size_t keysize, int mode) {
-  return (T*)stbds_hmget_key(memory_context, (void*)a, elemsize, key, keysize, mode);
+template<class T> static T * stbds_hmget_key_wrapper(void* memory_context, T *a, size_t elemsize, void *key, size_t keysize, int mode, const wchar_t *file, int line) {
+  return (T*)stbds_hmget_key(memory_context, (void*)a, elemsize, key, keysize, mode, file, line);
 }
-template<class T> static T * stbds_hmget_key_ts_wrapper(void* memory_context, T *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode) {
-  return (T*)stbds_hmget_key_ts(memory_context, (void*)a, elemsize, key, keysize, temp, mode);
+template<class T> static T * stbds_hmget_key_ts_wrapper(void* memory_context, T *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode, const wchar_t *file, int line) {
+  return (T*)stbds_hmget_key_ts(memory_context, (void*)a, elemsize, key, keysize, temp, mode, file, line);
 }
 template<class T> static T * stbds_hmput_default_wrapper(void* memory_context, T *a, size_t elemsize) {
   return (T*)stbds_hmput_default(memory_context, (void *)a, elemsize);
@@ -859,7 +859,7 @@ size_t stbds_rehash_items;
 //int *prev_allocs[65536];
 //int num_prev;
 
-void *stbds_arrgrowf(void* memory_context, void *a, size_t elemsize, size_t addlen, size_t min_cap)
+void *stbds_arrgrowf(void* memory_context, void *a, size_t elemsize, size_t addlen, size_t min_cap, const wchar_t*const file, int line)
 {
   stbds_array_header temp={0}; // force debugging
   void *b;
@@ -882,7 +882,7 @@ void *stbds_arrgrowf(void* memory_context, void *a, size_t elemsize, size_t addl
   //if (num_prev < 65536) if (a) prev_allocs[num_prev++] = (int *) ((char *) a+1);
   //if (num_prev == 2201)
   //  num_prev = num_prev;
-  b = STBDS_REALLOC(memory_context, (a) ? stbds_header(a) : 0, elemsize * min_cap + sizeof(stbds_array_header));
+  b = STBDS_REALLOC(memory_context, (a) ? stbds_header(a) : 0, elemsize * min_cap + sizeof(stbds_array_header), file, line);
   //if (num_prev < 65536) prev_allocs[num_prev++] = (int *) (char *) b;
   b = (char *) b + sizeof(stbds_array_header);
   if (a == NULL) {
@@ -984,7 +984,7 @@ static size_t stbds_log2(size_t slot_count)
 static stbds_hash_index *stbds_make_hash_index(void* memory_context, size_t slot_count, stbds_hash_index *ot)
 {
   stbds_hash_index *t;
-  t = (stbds_hash_index *) STBDS_REALLOC(memory_context,0,(slot_count >> STBDS_BUCKET_SHIFT) * sizeof(stbds_hash_bucket) + sizeof(stbds_hash_index) + STBDS_CACHE_LINE_SIZE-1);
+  t = (stbds_hash_index *) STBDS_REALLOC(memory_context,0,(slot_count >> STBDS_BUCKET_SHIFT) * sizeof(stbds_hash_bucket) + sizeof(stbds_hash_index) + STBDS_CACHE_LINE_SIZE-1, __FILEW__, __LINE__);
   t->storage = (stbds_hash_bucket *) STBDS_ALIGN_FWD((size_t) (t+1), STBDS_CACHE_LINE_SIZE);
   t->slot_count = slot_count;
   t->slot_count_log2 = stbds_log2(slot_count);
@@ -1378,12 +1378,12 @@ static ptrdiff_t stbds_hm_find_slot(void *a, size_t elemsize, void *key, size_t 
   /* NOTREACHED */
 }
 
-void * stbds_hmget_key_ts(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode)
+void * stbds_hmget_key_ts(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode, const wchar_t *file, int line)
 {
   size_t keyoffset = 0;
   if (a == NULL) {
     // make it non-empty so we can return a temp
-    a = stbds_arrgrowf(memory_context, 0, elemsize, 0, 1);
+    a = stbds_arrgrowf(memory_context, 0, elemsize, 0, 1, file, line);
     stbds_header(a)->length += 1;
     memset(a, 0, elemsize);
     *temp = STBDS_INDEX_EMPTY;
@@ -1409,10 +1409,10 @@ void * stbds_hmget_key_ts(void* memory_context, void *a, size_t elemsize, void *
   }
 }
 
-void * stbds_hmget_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode)
+void * stbds_hmget_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode, const wchar_t *file, int line)
 {
   ptrdiff_t temp;
-  void *p = stbds_hmget_key_ts(memory_context, a, elemsize, key, keysize, &temp, mode);
+  void *p = stbds_hmget_key_ts(memory_context, a, elemsize, key, keysize, &temp, mode, file, line);
   stbds_temp(STBDS_HASH_TO_ARR(p,elemsize)) = temp;
   return p;
 }
@@ -1424,7 +1424,7 @@ void * stbds_hmput_default(void* memory_context, void *a, size_t elemsize)
   //   a has a hash table but no entries, because of shmode <- grow
   //   a has entries <- do nothing
   if (a == NULL || stbds_header(STBDS_HASH_TO_ARR(a,elemsize))->length == 0) {
-    a = stbds_arrgrowf(memory_context, a ? STBDS_HASH_TO_ARR(a,elemsize) : NULL, elemsize, 0, 1);
+    a = stbds_arrgrowf(memory_context, a ? STBDS_HASH_TO_ARR(a,elemsize) : NULL, elemsize, 0, 1, __FILEW__, __LINE__);
     stbds_header(a)->length += 1;
     memset(a, 0, elemsize);
     a=STBDS_ARR_TO_HASH(a,elemsize);
@@ -1441,7 +1441,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
   stbds_hash_index *table;
 
   if (a == NULL) {
-    a = stbds_arrgrowf(memory_context, 0, elemsize, 0, 1);
+    a = stbds_arrgrowf(memory_context, 0, elemsize, 0, 1, __FILEW__, __LINE__);
     memset(a, 0, elemsize);
     stbds_header(a)->length += 1;
     // adjust a to point AFTER the default element
@@ -1537,7 +1537,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
       ptrdiff_t i = (ptrdiff_t) stbds_arrlen(a);
       // we want to do stbds_arraddn(1), but we can't use the macros since we don't have something of the right type
       if ((size_t) i+1 > stbds_arrcap(a))
-        *(void **) &a = stbds_arrgrowf(memory_context, a, elemsize, 1, 0);
+        *(void **) &a = stbds_arrgrowf(memory_context, a, elemsize, 1, 0, __FILEW__, __LINE__);
       raw_a = STBDS_ARR_TO_HASH(a,elemsize);
 
       STBDS_ASSERT((size_t) i+1 <= stbds_arrcap(a));
@@ -1560,7 +1560,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
 
 void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode)
 {
-  void *a = stbds_arrgrowf(memory_context, 0, elemsize, 0, 1);
+  void *a = stbds_arrgrowf(memory_context, 0, elemsize, 0, 1, __FILEW__, __LINE__);
   stbds_hash_index *h;
   memset(a, 0, elemsize);
   stbds_header(a)->length = 1;
@@ -1642,7 +1642,7 @@ static char *stbds_strdup(void* memory_context, char *str)
   // to keep replaceable allocator simple, we don't want to use strdup.
   // rolling our own also avoids problem of strdup vs _strdup
   size_t len = strlen(str)+1;
-  char *p = (char*) STBDS_REALLOC(memory_context, 0, len);
+  char *p = (char*) STBDS_REALLOC(memory_context, 0, len, __FILEW__, __LINE__);
   memmove(p, str, len);
   return p;
 }
@@ -1680,7 +1680,7 @@ char *stbds_mcstralloc(void* memory_context, stbds_string_arena *a, char *str)
       // note that we still advance string_block so block size will continue
       // increasing, so e.g. if somebody only calls this with 1000-long strings,
       // eventually the arena will start doubling and handling those as well
-      stbds_string_block *sb = (stbds_string_block *) STBDS_REALLOC(memory_context, 0, sizeof(*sb)-8 + len);
+      stbds_string_block *sb = (stbds_string_block *) STBDS_REALLOC(memory_context, 0, sizeof(*sb)-8 + len, __FILEW__, __LINE__);
       memmove(sb->storage, str, len);
       if (a->storage) {
         // insert it after the first element, so that we don't waste the space there
@@ -1693,7 +1693,7 @@ char *stbds_mcstralloc(void* memory_context, stbds_string_arena *a, char *str)
       }
       return sb->storage;
     } else {
-      stbds_string_block *sb = (stbds_string_block *) STBDS_REALLOC(memory_context, 0, sizeof(*sb)-8 + blocksize);
+      stbds_string_block *sb = (stbds_string_block *) STBDS_REALLOC(memory_context, 0, sizeof(*sb)-8 + blocksize, __FILEW__, __LINE__);
       sb->next = a->storage;
       a->storage = sb;
       a->remaining = blocksize;
