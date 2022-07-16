@@ -745,8 +745,8 @@ extern void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode)
 #define stbds_mcpshdel(mc, t, k) \
     ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) (k), sizeof (*(t))->key, STBDS_OFFSETOF(*(t),key), STBDS_HM_PTR_TO_STRING))\
     , (t)?stbds_temp((t)-1):0)
-#define stbds_mcsh_new_arena(mc, t)   ((t) = stbds_shmode_func_wrapper((mc), t, sizeof *(t), STBDS_SH_ARENA))
-#define stbds_mcsh_new_strdup(mc, t)  ((t) = stbds_shmode_func_wrapper((mc), t, sizeof *(t), STBDS_SH_STRDUP))
+#define stbds_mcsh_new_arena(mc, t)   (stbds_mcshfree((mc), (t)), (t) = stbds_shmode_func_wrapper((mc), t, sizeof *(t), STBDS_SH_ARENA))
+#define stbds_mcsh_new_strdup(mc, t)  (stbds_mcshfree((mc), (t)), (t) = stbds_shmode_func_wrapper((mc), t, sizeof *(t), STBDS_SH_STRDUP))
 #define stbds_mcshdefault(mc, t, v)   (stbds_mchmdefault((mc), (t), (v)))
 #define stbds_mcshdefaults(mc, t, s)  (stbds_mchmdefaults((mc), (t), (s)))
 #define stbds_mcshfree                stbds_mchmfree
