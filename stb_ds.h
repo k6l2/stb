@@ -636,7 +636,7 @@ extern void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode)
 #define stbds_arrmaybegrow(a,n)      (stbds_mcarrmaybegrow(NULL, a, n))
 #define stbds_arrgrow(a,b,c)         (stbds_mcarrgrow(NULL, a, b, c))
 #define stbds_mcarrsetcap(mc,a,n)    (stbds_mcarrgrow((mc),a,0,n))
-#define stbds_mcarrsetlen(mc,a,n)    ( (stbds_arrcap(a) < (size_t) (n) ? stbds_mcarrsetcap((mc),(a),(size_t)(n)),0 : 0)\
+#define stbds_mcarrsetlen(mc,a,n)    ( (stbds_arrcap(a) <= (size_t) (n) ? stbds_mcarrsetcap((mc),(a),(size_t)(n)),0 : 0)\
                                      , (a) ? stbds_header(a)->length = (size_t) (n) : 0)
 #define stbds_mcarrput(mc,a,v)       (stbds_mcarrmaybegrow((mc),a,1), (a)[stbds_header(a)->length++] = (v))
 #define stbds_mcarrpush              stbds_mcarrput  // synonym
