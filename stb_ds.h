@@ -544,41 +544,45 @@ CREDITS
 #define STBDS_NOTUSED(v)  (void)sizeof(v)
 #endif
 
+#if !defined(STBDS_API)
+#define STBDS_API extern
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // for security against attackers, seed the library with a random number, at least time() but stronger is better
-extern void stbds_rand_seed(size_t seed);
+STBDS_API void stbds_rand_seed(size_t seed);
 
 // these are the hash functions used internally if you want to test them or use them for other purposes
-extern size_t stbds_hash_bytes(void *p, size_t len, size_t seed);
-extern size_t stbds_hash_string(char *str, size_t seed);
+STBDS_API size_t stbds_hash_bytes(void *p, size_t len, size_t seed);
+STBDS_API size_t stbds_hash_string(char *str, size_t seed);
 
 // this is a simple string arena allocator, initialize with e.g. 'stbds_string_arena my_arena={0}'.
 typedef struct stbds_string_arena stbds_string_arena;
-extern char * stbds_stralloc(stbds_string_arena *a, char *str);
-extern void   stbds_strreset(stbds_string_arena *a);
-extern char * stbds_mcstralloc(void* memory_context, stbds_string_arena *a, char *str);
-extern void   stbds_mcstrreset(void* memory_context, stbds_string_arena *a);
+STBDS_API char * stbds_stralloc(stbds_string_arena *a, char *str);
+STBDS_API void   stbds_strreset(stbds_string_arena *a);
+STBDS_API char * stbds_mcstralloc(void* memory_context, stbds_string_arena *a, char *str);
+STBDS_API void   stbds_mcstrreset(void* memory_context, stbds_string_arena *a);
 
 // have to #define STBDS_UNIT_TESTS to call this
-extern void stbds_unit_tests(void);
+STBDS_API void stbds_unit_tests(void);
 
 ///////////////
 //
 // Everything below here is implementation details
 //
 
-extern void * stbds_arrgrowf(void* memory_context, void *a, size_t elemsize, size_t addlen, size_t min_cap, const wchar_t* file, int line);
-extern void   stbds_arrfreef(void* memory_context, void *a);
-extern void   stbds_hmfree_func(void* memory_context, void *p, size_t elemsize);
-extern void * stbds_hmget_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode, const wchar_t *file, int line);
-extern void * stbds_hmget_key_ts(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode, const wchar_t *file, int line);
-extern void * stbds_hmput_default(void* memory_context, void *a, size_t elemsize);
-extern void * stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode);
-extern void * stbds_hmdel_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, size_t keyoffset, int mode);
-extern void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode);
+STBDS_API void * stbds_arrgrowf(void* memory_context, void *a, size_t elemsize, size_t addlen, size_t min_cap, const wchar_t* file, int line);
+STBDS_API void   stbds_arrfreef(void* memory_context, void *a);
+STBDS_API void   stbds_hmfree_func(void* memory_context, void *p, size_t elemsize);
+STBDS_API void * stbds_hmget_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode, const wchar_t *file, int line);
+STBDS_API void * stbds_hmget_key_ts(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, ptrdiff_t *temp, int mode, const wchar_t *file, int line);
+STBDS_API void * stbds_hmput_default(void* memory_context, void *a, size_t elemsize);
+STBDS_API void * stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, int mode);
+STBDS_API void * stbds_hmdel_key(void* memory_context, void *a, size_t elemsize, void *key, size_t keysize, size_t keyoffset, int mode);
+STBDS_API void * stbds_shmode_func(void* memory_context, size_t elemsize, int mode);
 
 #ifdef __cplusplus
 }
@@ -948,7 +952,7 @@ typedef struct
 
 static size_t stbds_hash_seed=0x31415926;
 
-void stbds_rand_seed(size_t seed)
+STBDS_API void stbds_rand_seed(size_t seed)
 {
   stbds_hash_seed = seed;
 }
@@ -1179,7 +1183,7 @@ static size_t stbds_siphash_bytes(void *p, size_t len, size_t seed)
     } while (0)
 
   for (i=0; i+sizeof(size_t) <= len; i += sizeof(size_t), d += sizeof(size_t)) {
-    data = d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24);
+    data = (size_t) (d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24));
     data |= (size_t) (d[4] | (d[5] << 8) | (d[6] << 16) | (d[7] << 24)) << 16 << 16; // discarded if size_t == 4
 
     v3 ^= data;
@@ -1221,7 +1225,7 @@ size_t stbds_hash_bytes(void *p, size_t len, size_t seed)
   unsigned char *d = (unsigned char *) p;
 
   if (len == 4) {
-    unsigned int hash = d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24);
+    unsigned int hash = (unsigned int) (d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24));
     #if 0
     // HASH32-A  Bob Jenkin's hash function w/o large constants
     hash ^= seed;
@@ -1277,7 +1281,7 @@ size_t stbds_hash_bytes(void *p, size_t len, size_t seed)
 
     return (((size_t) hash << 16 << 16) | hash) ^ seed;
   } else if (len == 8 && sizeof(size_t) == 8) {
-    size_t hash = d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24);
+    size_t hash = (size_t) (d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24));
     hash |= (size_t) (d[4] | (d[5] << 8) | (d[6] << 16) | (d[7] << 24)) << 16 << 16; // avoid warning if size_t == 4
     hash ^= seed;
     hash = (~hash) + (hash << 21);
@@ -1350,8 +1354,8 @@ static ptrdiff_t stbds_hm_find_slot(void *a, size_t elemsize, void *key, size_t 
     // start searching from pos to end of bucket, this should help performance on small hash tables that fit in cache
     for (i=pos & STBDS_BUCKET_MASK; i < STBDS_BUCKET_LENGTH; ++i) {
       if (bucket->hash[i] == hash) {
-        if (stbds_is_key_equal(a, elemsize, key, keysize, keyoffset, mode, bucket->index[i])) {
-          return (pos & ~STBDS_BUCKET_MASK)+i;
+        if (stbds_is_key_equal(a, elemsize, key, keysize, keyoffset, mode, (size_t)bucket->index[i])) {
+          return (ptrdiff_t) ((pos & ~STBDS_BUCKET_MASK)+i);
         }
       } else if (bucket->hash[i] == STBDS_HASH_EMPTY) {
         return -1;
@@ -1362,8 +1366,8 @@ static ptrdiff_t stbds_hm_find_slot(void *a, size_t elemsize, void *key, size_t 
     limit = pos & STBDS_BUCKET_MASK;
     for (i = 0; i < limit; ++i) {
       if (bucket->hash[i] == hash) {
-        if (stbds_is_key_equal(a, elemsize, key, keysize, keyoffset, mode, bucket->index[i])) {
-          return (pos & ~STBDS_BUCKET_MASK)+i;
+        if (stbds_is_key_equal(a, elemsize, key, keysize, keyoffset, mode, (size_t)bucket->index[i])) {
+          return (ptrdiff_t) ((pos & ~STBDS_BUCKET_MASK)+i);
         }
       } else if (bucket->hash[i] == STBDS_HASH_EMPTY) {
         return -1;
@@ -1463,7 +1467,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
     if (table)
       STBDS_FREE(memory_context, table);
     else
-      nt->string.mode = mode >= STBDS_HM_STRING ? STBDS_SH_DEFAULT : 0;
+      nt->string.mode = (unsigned char) (mode >= STBDS_HM_STRING ? STBDS_SH_DEFAULT : 0);
     stbds_header(a)->hash_table = table = nt;
     STBDS_STATS(++stbds_hash_grow);
   }
@@ -1489,7 +1493,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
       // start searching from pos to end of bucket
       for (i=pos & STBDS_BUCKET_MASK; i < STBDS_BUCKET_LENGTH; ++i) {
         if (bucket->hash[i] == hash) {
-          if (stbds_is_key_equal(raw_a, elemsize, key, keysize, keyoffset, mode, bucket->index[i])) {
+          if (stbds_is_key_equal(raw_a, elemsize, key, keysize, keyoffset, mode, (size_t)bucket->index[i])) {
             stbds_temp(a) = bucket->index[i];
             if (mode >= STBDS_HM_STRING)
               stbds_temp_key(a) = * (char **) ((char *) raw_a + elemsize*bucket->index[i] + keyoffset);
@@ -1508,7 +1512,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
       limit = pos & STBDS_BUCKET_MASK;
       for (i = 0; i < limit; ++i) {
         if (bucket->hash[i] == hash) {
-          if (stbds_is_key_equal(raw_a, elemsize, key, keysize, keyoffset, mode, bucket->index[i])) {
+          if (stbds_is_key_equal(raw_a, elemsize, key, keysize, keyoffset, mode, (size_t)bucket->index[i])) {
             stbds_temp(a) = bucket->index[i];
             return STBDS_ARR_TO_HASH(a,elemsize);
           }
@@ -1528,7 +1532,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
     }
    found_empty_slot:
     if (tombstone >= 0) {
-      pos = tombstone;
+      pos = (size_t)tombstone;
       --table->tombstone_count;
     }
     ++table->used_count;
@@ -1541,7 +1545,7 @@ void *stbds_hmput_key(void* memory_context, void *a, size_t elemsize, void *key,
       raw_a = STBDS_ARR_TO_HASH(a,elemsize);
 
       STBDS_ASSERT((size_t) i+1 <= stbds_arrcap(a));
-      stbds_header(a)->length = i+1;
+      stbds_header(a)->length = (size_t) (i+1);
       bucket = &table->storage[pos >> STBDS_BUCKET_SHIFT];
       bucket->hash[pos & STBDS_BUCKET_MASK] = hash;
       bucket->index[pos & STBDS_BUCKET_MASK] = i-1;
