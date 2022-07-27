@@ -689,7 +689,7 @@ STBDS_API void * stbds_shmode_func(void* memory_context, size_t elemsize, int mo
     ( (t) = stbds_hmget_key_ts_wrapper((mc), (t), sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, &(temp), STBDS_HM_BINARY, __FILEW__, __LINE__)\
     , (temp))
 #define stbds_mchmdel(mc, t, k) \
-    ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, STBDS_OFFSETOF((t),key), STBDS_HM_BINARY))\
+    ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, (size_t) STBDS_OFFSETOF((t),key), STBDS_HM_BINARY))\
     , (t) ? stbds_temp((t)-1) : 0)
 #define stbds_mchmdefault(mc, t, v) \
     ( (t) = stbds_hmput_default_wrapper((mc), (t), sizeof *(t))\
@@ -744,10 +744,10 @@ STBDS_API void * stbds_shmode_func(void* memory_context, size_t elemsize, int mo
 #define stbds_mcshgetp(mc, t, k) ((void)stbds_mcshgeti((mc), (t), (k)), &(t)[stbds_temp((t)-1)])
 #define stbds_mcpshget(mc, t, k) ((void)stbds_mcpshgeti((mc), (t), (k)), (t)[stbds_temp((t)-1)])
 #define stbds_mcshdel(mc, t, k) \
-    ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) (k), sizeof (t)->key, STBDS_OFFSETOF((t),key), STBDS_HM_STRING))\
+    ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) (k), sizeof (t)->key, (size_t) STBDS_OFFSETOF((t),key), STBDS_HM_STRING))\
     , (t)?stbds_temp((t)-1):0)
 #define stbds_mcpshdel(mc, t, k) \
-    ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) (k), sizeof (*(t))->key, STBDS_OFFSETOF(*(t),key), STBDS_HM_PTR_TO_STRING))\
+    ( ((t) = stbds_hmdel_key_wrapper((mc), (t),sizeof *(t), (void*) (k), sizeof (*(t))->key, (size_t) STBDS_OFFSETOF(*(t),key), STBDS_HM_PTR_TO_STRING))\
     , (t)?stbds_temp((t)-1):0)
 #define stbds_mcsh_new_arena(mc, t)   (stbds_mcshfree((mc), (t)), (t) = stbds_shmode_func_wrapper((mc), t, sizeof *(t), STBDS_SH_ARENA))
 #define stbds_mcsh_new_strdup(mc, t)  (stbds_mcshfree((mc), (t)), (t) = stbds_shmode_func_wrapper((mc), t, sizeof *(t), STBDS_SH_STRDUP))
@@ -1771,7 +1771,7 @@ void stbds_unit_tests(void)
   const int testsize2 = testsize/20;
   int *arr=NULL;
   struct { int   key;        int value; }  *intmap  = NULL;
-  struct { char *key;        int value; }  *strmap  = NULL, s;
+  struct { const char *key;  int value; }  *strmap  = NULL, s;
   struct { stbds_struct key; int value; }  *map     = NULL;
   stbds_struct                             *map2    = NULL;
   stbds_struct2                            *map3    = NULL;
