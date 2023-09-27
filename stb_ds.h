@@ -834,6 +834,15 @@ template<class T> static T * stbds_shmode_func_wrapper(void* memory_context, T *
 //
 
 #ifdef STB_DS_IMPLEMENTATION
+
+#ifndef STB_DS_SWITCH_CASE_FALL_THROUGH
+  #ifdef __cplusplus
+    #define STB_DS_SWITCH_CASE_FALL_THROUGH [[fallthrough]];
+  #else
+    #define STB_DS_SWITCH_CASE_FALL_THROUGH
+  #endif
+#endif
+
 #include <string.h>
 
 #ifndef STBDS_ASSERT
@@ -1193,13 +1202,13 @@ static size_t stbds_siphash_bytes(void *p, size_t len, size_t seed)
   }
   data = len << (STBDS_SIZE_T_BITS-8);
   switch (len - i) {
-    case 7: data |= ((size_t) d[6] << 24) << 24; // fall through
-    case 6: data |= ((size_t) d[5] << 20) << 20; // fall through
-    case 5: data |= ((size_t) d[4] << 16) << 16; // fall through
-    case 4: data |= (d[3] << 24); // fall through
-    case 3: data |= (d[2] << 16); // fall through
-    case 2: data |= (d[1] << 8); // fall through
-    case 1: data |= d[0]; // fall through
+    case 7: data |= ((size_t) d[6] << 24) << 24; STB_DS_SWITCH_CASE_FALL_THROUGH
+    case 6: data |= ((size_t) d[5] << 20) << 20; STB_DS_SWITCH_CASE_FALL_THROUGH
+    case 5: data |= ((size_t) d[4] << 16) << 16; STB_DS_SWITCH_CASE_FALL_THROUGH
+    case 4: data |= (d[3] << 24); STB_DS_SWITCH_CASE_FALL_THROUGH
+    case 3: data |= (d[2] << 16); STB_DS_SWITCH_CASE_FALL_THROUGH
+    case 2: data |= (d[1] << 8); STB_DS_SWITCH_CASE_FALL_THROUGH
+    case 1: data |= d[0]; STB_DS_SWITCH_CASE_FALL_THROUGH
     case 0: break;
   }
   v3 ^= data;
